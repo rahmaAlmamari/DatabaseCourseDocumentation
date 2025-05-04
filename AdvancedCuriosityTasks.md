@@ -60,3 +60,4 @@ _2.3. Find an example of a game that uses a relational database?_
 
 - World of Warcraft: Uses a relational database to store player data, 
   including character information, inventory, and quest progress.
+
