@@ -1,0 +1,127 @@
+
+
+delete from Department where dept_id=70
+
+delete from Department where dept_id=20
+
+
+update Department set dept_id=200 where dept_id=20
+
+--WE CAN NOT DELETE THE STUDENT JUST BECUASE WANT TO DELETE DEPT
+--YES WE CAN SET TO NULL BUT DO NOT DELETED
+
+
+update student set dept_id=NULL
+where dept_id=20
+
+
+--NOW IF WE WANT TO DELETE DEPT 20 WE CAN
+--MANUALLY!
+--THERE IS SOMTHING BUILT IN IN DATABASE!
+--GO TO THE RELATIONSHIP --> PROPRETIES
+--ON DELETE SET NULL
+--ON UPDATE SET CASCADE --> IF I CHANGED ON THE PARENT -->CHILD WILL CHANGED
+
+--ON DELETE SET DEFAULT -->THE CHILD, FK ,STUDENT -->MUST IN FK SET DEFAULT VALUE + ctrl s  
+
+  
+----------------------------------
+create table dept
+(
+ did int primary key,
+ dname varchar(20) 
+)
+
+create table emp
+(
+ eid int,
+ ename varchar(20),
+ eadd varchar(20) default 'cairo',
+ hiredate date default getdate(),
+ BD date,
+ age as(year(getdate())-year(BD)), -- هنا صح انه هو دريفيد بس ما ينفع احط له بريسيستنت لانه فيها التاريخ والتاريخ يتغير (deterministic & non - deterministc)
+ sal int,
+ overtime int,
+ --we will not give them data type
+ --لما تسوي سلكت بتحصله موجود ك ستركتشر بس هو غلى الهاردسك دريفن
+
+ netsal as(isnull(sal,0)+isnull(overtime,0)) persisted,-- هو دريفد و مخزن على الهاردسك لانه استخدمنا هالكلمة , --drived --> شكلها المايكروسفت ماسكة العصا من النص :)
+ --هنا ليش حطينا از نل يمكن يكون ما معي اوفر تايم او م عندي راتب وما ينفع اكتبها من البدايةنوت نل  
+ gender varchar(1),
+ hour_rate int not null,
+ Dnum int,
+ constraint c1 primary key(eid,ename),
+ constraint c2 unique(sal),
+ constraint c3 unique(overtime),
+ constraint c4 check(sal>1000),
+ constraint c5 check(eadd in('alex','mansoura','cairo')),
+ constraint c6 check(overtime between 100 and 500),
+
+ constraint c7 check(gender='m' or gender='F'),
+
+ constraint c8 foreign key(Dnum) references Dept(did)
+			on delete set null on update cascade
+)
+
+alter table emp drop constraint c7
+--من الافضل اني احط الشروط اثناء انشاء الجدول لانه فاضي 
+--لانه لو فيه داتا يمكن يتعارض من الشروط 
+
+alter table emp add constraint c10 check(hour_rate>1000)
+
+--الحين انا مثلا اريد اسوي شروط بس اخليها شير بين كذا جدول واريد اطبقها على الجدول حتى لو كان فيه بيانات قديمةوجديدة 
+--constraints م يقدر يسوي كذا 
+-- طلع شيء يسمى rules
+--نقدر نطبقها على كذا كولوم وتطبق على البيانات الجديدة
+-------------------------------------------------------------------------------
+
+create rule r1 as @x > 1000
+
+alter table instructor add constraint c100 check(salary>1000)--اذا فيه قيم من اول اقل من 1000 وجيت اطبق هالشرط م راح يصير
+-- لكن لوجينا وسوينا هذه القاعدة عادي بتتطبق
+--رغم انه فيه قيم قديمة
+--خلاص دامك طبقت الرول في هي تشمل القيم الجديدة وحتى تشمل تعديلك على قيم القديمة
+--بمعنى انه اي قيمة تدخل الجدول بعد تطبيق هذه القاعدة بتمشي عليها  مالها علاقة باللي قبل يعني لما اطبقها م بتروح تطبق ع القديم 
+
+sp_bindrule r1,'instructor.salary' -- هنا كأني اقوله الراتب اكبر من 1000
+-- نطبق القاعدة هذه على جدول مختلف 
+sp_bindrule r1,'emp.overtime'
+
+sp_unbindrule 'instructor.salary'
+
+sp_unbindrule 'emp.overtime'
+
+drop rule r1 -- طبعا م تقدر بالمره تحذفها لازم قبل تشيلها
+
+--ممكن اسوي نفس الكلام مع ديفولت 
+create default def1 as 7000
+
+sp_bindefault def1,'instructor.salary'
+-- وممكن اطبقها على جدول ثاني عادي بنفس الطريقة
+
+
+sp_unbindefault 'instructor.salary'
+drop default def1
+ --في شي اكبر من كذا بعد كيف اسوي كومبلكس داتا تايب اخترع داتا تايب جديد :)
+ 
+--New data type       (int    default(5000)    condition>1000)
+
+create rule r1 as @x>1000 
+--ناخذهم الاثنين
+create default def1 as 5000
+
+sp_addtype NewDT,'int' -- ياخذ من الانتجر 
+
+sp_bindrule r1,NewDt
+sp_bindefault def1,NewDT
+
+create table mytest
+(
+ eid int ,
+ ename varchar(20),
+ esal NewDT --  int , defualt value=5000, وقيمته اكبر من 1000
+)
+-------------------------------------------
+--------------------------------------------
+
+

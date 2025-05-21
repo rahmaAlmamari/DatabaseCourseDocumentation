@@ -1,0 +1,221 @@
+--SQL Session 1
+--1)DDL
+create database TrainingCompany 
+
+use TrainingCompany
+
+create table Employee 
+(
+	Fname nvarchar(20) not null,
+	Mname nvarchar(20),
+	Lname nvarchar(20) not null,
+	Ssn int primary key identity(1,1 ),
+	Bdate date,
+	EmployeeAddress nvarchar(100),
+	Gender bit default 0,
+
+ --   Gender NVARCHAR(6) CHECK (Gender IN ('male', 'female')),
+	Salary int CONSTRAINT CK_Employee_Salary check(Salary between 500 and 3500),
+	Super_ssn int,
+	foreign key (Super_ssn) references Employee(Ssn)
+)
+
+create table Department
+(
+	Dname nvarchar(20) not null,
+	Dnumber int primary key identity(1, 1),
+	Mgr_ssn int,
+	Mgr_start_date date not null,
+	foreign key (Mgr_ssn) references Employee(Ssn)
+)
+
+create table Dept_Location
+(
+	Dnumber int,
+	Dlocation nvarchar(100),
+	Foreign key (Dnumber) references Department(Dnumber),
+	primary key (Dnumber, Dlocation)
+)
+
+create table Project
+(
+	Pname nvarchar(50) not null,
+	Pnumber int primary key identity(1,1),
+	Plocation nvarchar(100) not null,
+	Dnum int,
+	foreign key (Dnum) references Department(Dnumber)
+)
+
+create table Works_on
+(
+	Essn int,
+	Pno int,
+	Hrs int not null,
+	foreign key (Essn) references Employee(Ssn),
+	foreign key (Pno) references Project(Pnumber),
+	primary key (Essn, Pno)
+)
+
+create table EmployeeDependent
+(
+	Essn int,
+	Dependent_name nvarchar(50) not null,
+	gender bit default 0,
+	Bdate date,
+	Relationship nvarchar(10),
+	foreign key (Essn) references Employee(Ssn),
+	primary key (Essn, Dependent_name)
+)
+
+alter table Employee
+	add Dno int foreign key references Department(Dnumber)
+
+ALTER TABLE Employee
+ALTER COLUMN Mname nvarchar(10);
+
+EXEC sp_rename 'Employee.Mname', 'Midname', 'COLUMN';
+
+ALTER TABLE Employee
+DROP COLUMN Midname;
+
+ALTER TABLE Employee
+ADD CONSTRAINT UQ_Employee_Mname UNIQUE (Fname);
+
+ALTER TABLE Employee
+DROP CONSTRAINT CK_Employee_Salary;
+
+ALTER TABLE Employees
+add CONSTRAINT CK_Employee_Salary check(Salary between 500 and 3500) 
+
+EXEC sp_rename 'Employee', 'Employees';
+
+truncate table EmployeeDependent
+
+drop table EmployeeDependent
+
+drop database TrainingCompany --Will not done if currently in use
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+--2)DML
+use TrainingCompany
+--insert
+--simple insert
+insert into Employees(Fname,Lname,Bdate,Gender,Salary)
+values('karim','salah','11-10-2001',1,2300)
+
+insert into Employees(Fname,Lname,Bdate,Gender,Salary)
+values('ali','ahmed','11-10-2001',1,3400)
+
+
+--row constructor
+insert into Employees(Fname,Lname,Bdate,Gender,Salary)
+values('shahad','ahmed','11-10-2001' ,1,2300),
+	  ('omar','ahmed','11-10-2001',1,2300),
+      ('ghada','ahmed','11-10-2001',0,2300)
+
+
+
+--update
+update Employees
+set Salary+=25
+
+update Employees
+set Salary+=50
+where ssn=6
+
+
+
+update Employees
+set EmployeeAddress='Muscat', Salary=3000
+where ssn=6
+
+
+delete from Employees
+where ssn=6 
+
+
+truncate table Employees
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--3)DQL
+use ITI
+
+--select 
+select *
+from student
+
+select * from student 
+where St_Address ='alex'
+
+select st_id,st_fname
+from student
+
+select st_fname + ' '+ ST_LNAME as [full name]
+from student
+
+
+SELECT *
+from student
+where st_age>23
+
+
+SELECT *
+from student
+where st_age>22 and st_age <24
+
+
+
+
+SELECT *
+from student
+where st_age between 22 and 24
+
+select * from Student 
+order by St_Age desc
+
+--logic
+select * from student
+where st_address ='alex' and st_address='cairo'  
+
+select * from student
+where st_address ='alex' or st_address='cairo'
+
+
+--or we use in rather than or
+select * from student
+where st_address in('cairo','alex','mansoura')
+
+
+select * from student
+where st_address not in('cairo','alex','mansoura')
+
+-- _ one char, % set of char
+select *
+from student
+where st_fname like 'a%'
+
+select *
+from student
+where st_fname like '%a'
+
+
+
+select st_fname
+from student
+
+select distinct(st_fname) --order & distinct
+from student
+
+
+select *
+from student
+where st_fname is not null
+
+
+select *
+from student
+where st_fname is  null
+
+
+
